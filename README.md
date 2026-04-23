@@ -134,3 +134,5 @@ INSERT INTO bills (order_id, total_amount) VALUES (2, 79.00);
 select * 
 from order_items;
 
+
+![ERD Diagram](restaurant_erd.png)
