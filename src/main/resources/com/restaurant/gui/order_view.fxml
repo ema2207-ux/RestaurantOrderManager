@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.restaurant.gui.OrderController" stylesheets="@style.css">
+    <top>
+        <HBox spacing="20" alignment="CENTER_LEFT" styleClass="header-bar" style="-fx-padding: 15;">
+            <Button text="← ÎNAPOI" onAction="#handleBack" styleClass="button-danger"/>
+            <Label fx:id="tableTitleLabel" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+        </HBox>
+    </top>
+    <left>
+        <VBox spacing="15" prefWidth="350" styleClass="sidebar" style="-fx-padding: 20;">
+            <Label text="MENIU PRODUSE" styleClass="sidebar-title"/>
+            <TextField fx:id="searchMenuField" promptText="Caută produs..." style="-fx-background-radius: 15;"/>
+            <ListView fx:id="menuListView" VBox.vgrow="ALWAYS" />
+        </VBox>
+    </left>
+    <center>
+        <VBox spacing="20" style="-fx-padding: 30;">
+            <VBox spacing="15" styleClass="card" VBox.vgrow="ALWAYS">
+                <Label text="ARTICOLE COMANDATE" style="-fx-font-weight: bold;"/>
+                <ListView fx:id="orderItemsListView" VBox.vgrow="ALWAYS" />
+                <HBox alignment="CENTER_RIGHT" spacing="20" style="-fx-padding: 20; -fx-background-color: #f8f9fa; -fx-background-radius: 10;">
+                    <Label text="TOTAL:" style="-fx-font-weight: bold; -fx-font-size: 20px;"/>
+                    <Label fx:id="totalLabel" text="0.00 RON" style="-fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: #28a745;"/>
+                </HBox>
+                <HBox spacing="15" alignment="CENTER_RIGHT">
+                    <RadioButton fx:id="cashRadio" text="Numerar" selected="true" style="-fx-font-weight: bold;">
+                        <toggleGroup><ToggleGroup fx:id="pg"/></toggleGroup>
+                    </RadioButton>
+                    <RadioButton text="Card" toggleGroup="$pg" style="-fx-font-weight: bold;"/>
+                    <Button text="ȘTERGE TOT" onAction="#handleClearOrder" style="-fx-background-color: #ffeded; -fx-text-fill: #dc3545;"/>
+                    <Button text="FINALIZEAZĂ PLATA" onAction="#handleFinishOrder" styleClass="button-success" prefHeight="50" prefWidth="250"/>
+                </HBox>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>
+

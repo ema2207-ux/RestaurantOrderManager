@@ -64,10 +64,10 @@ public class DatabaseSeeder {
         }
 
         System.out.println("Populăm angajații...");
-        addEmployee("Andrei Popescu", "Manager", "0000");
-        addEmployee("Maria Ionescu", "Ospătar", "1111");
-        addEmployee("Ion Dumitru", "Ospătar", "2222");
-        addEmployee("Elena Vasile", "Ospătar", "3333");
+        addEmployee("Radulescu Emanuel-Andrei", "Manager", "0000");
+        addEmployee("Maria Ionescu", "Chelner", "1111");
+        addEmployee("Ion Dumitru", "Chelner", "2222");
+        addEmployee("Elena Vasile", "Chelner", "3333");
     }
 
     private static void addFoodItem(String name, double price, boolean isVegan) {

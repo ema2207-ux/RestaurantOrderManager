@@ -28,5 +28,13 @@ public class TableService {
     public List<Table> findAll() {
         return tableRepository.findAll();
     }
-}
 
+    public void resetAllTables() {
+        List<Table> tables = findAll();
+        for (Table t : tables) {
+            if (t.isOccupied()) {
+                update(t.getId(), false);
+            }
+        }
+    }
+}

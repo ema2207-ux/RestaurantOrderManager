@@ -17,13 +17,13 @@ public class EmployeeService {
         return instance;
     }
 
-    public void create(String name, String role) {
-        Employee e = new Employee(0, name, role);
+    public void create(String name, String role, String pin) {
+        Employee e = new Employee(0, name, role, pin);
         employeeRepository.save(e);
     }
 
-    public void update(int id, String name, String role) {
-        Employee e = new Employee(id, name, role);
+    public void update(int id, String name, String role, String pin) {
+        Employee e = new Employee(id, name, role, pin);
         employeeRepository.update(e);
     }
 

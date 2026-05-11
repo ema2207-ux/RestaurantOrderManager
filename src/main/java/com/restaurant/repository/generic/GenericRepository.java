@@ -56,12 +56,49 @@ public abstract class GenericRepository<T> {
     }
 
     public void save(T entity) {
-        // Implementarea pentru save va depinde de cum definim INSERT SQL-ul generat.
-        // Pentru simplitate, folosim o abordare bazata pe setInsertParameters si setarile concrete.
-        // In mod normal am avea nevoie de campurile tabelului, dar aici simplificam:
+        // We need different logic for different tables, but a common pattern is:
+        String sql = "INSERT INTO " + getTableName();
+        if ("employees".equals(getTableName())) {
+            sql += " (name, role, pin) VALUES (?, ?, ?)";
+        } else if ("restaurant_tables".equals(getTableName())) {
+            sql += " (id, is_occupied) VALUES (?, ?)";
+        } else if ("menu_items".equals(getTableName())) {
+            sql += " (name, base_price) VALUES (?, ?)";
+        } else if ("orders".equals(getTableName())) {
+            sql += " (table_id, employee_id, status) VALUES (?, ?, ?)";
+        } else if ("bills".equals(getTableName())) {
+            sql += " (order_id, total_amount) VALUES (?, ?)";
+        } else {
+            return; // Not implemented for other tables yet
+        }
+
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            setInsertParameters(pstmt, entity);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void update(T entity) {
-        // La fel ca la save, logica depinde de setUpdateParameters.
+        String sql = "UPDATE " + getTableName();
+        if ("employees".equals(getTableName())) {
+            sql += " SET name = ?, role = ?, pin = ? WHERE id = ?";
+        } else if ("restaurant_tables".equals(getTableName())) {
+            sql += " SET is_occupied = ? WHERE id = ?";
+        } else if ("orders".equals(getTableName())) {
+            sql += " SET status = ? WHERE id = ?";
+        } else {
+            return;
+        }
+
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            setUpdateParameters(pstmt, entity);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

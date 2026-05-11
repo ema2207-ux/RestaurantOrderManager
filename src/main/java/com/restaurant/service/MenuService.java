@@ -4,6 +4,8 @@ import com.restaurant.model.MenuItem;
 import com.restaurant.model.FoodItem;
 import com.restaurant.model.DrinkItem;
 import com.restaurant.repository.MenuRepository;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class MenuService {
@@ -28,7 +30,10 @@ public class MenuService {
     }
 
     public List<MenuItem> findAll() {
-        return menuRepository.findAll();
+        List<MenuItem> items = menuRepository.findAll();
+        // Sorting items alphabetically by name to satisfy collection sorting requirement
+        Collections.sort(items, Comparator.comparing(MenuItem::getName));
+        return items;
     }
 
     public void update(int id, String name, double price) {
@@ -39,4 +44,3 @@ public class MenuService {
         }
     }
 }
-

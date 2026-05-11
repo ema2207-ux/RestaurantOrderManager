@@ -17,6 +17,8 @@
     <Button text="AUTENTIFICARE" onAction="#handleLogin" maxWidth="Infinity"
             style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10;"/>
 
+    <Button text="CREEAZĂ CONT STAFF" onAction="#handleShowRegister" maxWidth="Infinity"
+            style="-fx-background-color: transparent; -fx-text-fill: #3498db; -fx-border-color: #3498db; -fx-border-radius: 5; -fx-padding: 8;"/>
+
     <Label fx:id="errorLabel" style="-fx-text-fill: #e74c3c;"/>
 </VBox>
-

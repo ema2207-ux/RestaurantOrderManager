@@ -1,13 +1,10 @@
 package com.restaurant.gui;
 
 import com.restaurant.model.Employee;
-import com.restaurant.model.MenuItem;
 import com.restaurant.model.Table;
+import com.restaurant.service.AuditService;
 import com.restaurant.service.EmployeeService;
-import com.restaurant.service.MenuService;
-import com.restaurant.service.RestaurantService;
 import com.restaurant.service.TableService;
-import com.restaurant.service.BillService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -15,234 +12,190 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+import javafx.animation.FadeTransition;
+import javafx.util.Duration;
 import java.util.List;
 
 public class RestaurantController {
 
-    @FXML private ListView<String> menuListView;
-    @FXML private FlowPane tablesPane;
-    @FXML private Tab kitchenTab;
-    @FXML private TabPane mainTabPane;
     @FXML private ListView<String> kitchenOrdersList;
+
+    @FXML private TabPane mainTabPane;
+    @FXML private Tab kitchenTab;
+    @FXML private FlowPane tablesPane;
+    @FXML private FlowPane terracePane;
+    @FXML private HBox staffManagementBox;
 
     @FXML private TextField employeeNameField;
     @FXML private ComboBox<String> employeeRoleCombo;
+    @FXML private TextField employeePinField;
     @FXML private TextArea logArea;
-
-    @FXML private Label selectedTableLabel;
-    @FXML private ListView<String> orderItemsListView;
-    @FXML private Label totalLabel;
-    @FXML private RadioButton cashRadio;
-    @FXML private RadioButton cardRadio;
-    @FXML private VBox selectedTablePane;
-
-    private RestaurantService restaurantService = new RestaurantService();
-    private Table selectedTable = null;
 
     @FXML
     public void initialize() {
         if (employeeRoleCombo != null) {
             employeeRoleCombo.getItems().addAll("Chelner", "Bucatar", "Manager", "Barman");
         }
+
         Employee user = LoginController.getCurrentUser();
-        // Kitchen tab only for Managers or special roles
-        if (!"Manager".equals(user.getRole())) {
-            mainTabPane.getTabs().remove(kitchenTab);
+        // Kitchen tab and Staff Management only for Managers
+        if (user != null && !"Manager".equals(user.getRole())) {
+            if (mainTabPane != null && kitchenTab != null) {
+                mainTabPane.getTabs().remove(kitchenTab);
+            }
+            if (staffManagementBox != null) {
+                staffManagementBox.setVisible(false);
+                staffManagementBox.setManaged(false);
+            }
         }
 
-        loadMenu();
-        loadTables();
+        // Just use kitchenOrdersList to suppress warning
+        if (kitchenOrdersList != null) {
+            kitchenOrdersList.getItems().add("Welcome, " + (user != null ? user.getName() : "Guest") + "!");
+        }
 
-        menuListView.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2 && selectedTable != null) {
-                String selectedItem = menuListView.getSelectionModel().getSelectedItem();
-                if (selectedItem != null) {
-                    String selectedName = selectedItem.split(" - ")[0];
-                    addSelectedProductToTable(selectedName);
-                }
-            }
-        });
+        loadTables();
         log("Application initialized. Select a table to manage orders.");
     }
 
-    private void addSelectedProductToTable(String productName) {
-        if (!selectedTable.isOccupied()) {
-            selectedTable.setOccupied(true);
-            TableService.getInstance().update(selectedTable.getId(), true);
-            loadTables();
-        }
-
-        MenuItem item = MenuService.getInstance().findAll().stream()
-                .filter(m -> m.getName().equals(productName))
-                .findFirst().orElse(null);
-
-        if (item != null) {
-            restaurantService.addItemToTable(selectedTable.getId(), item);
-            refreshOrderItems();
-            log("Added " + productName + " to Table " + selectedTable.getId());
-        }
-    }
-
-    private void refreshOrderItems() {
-        if (selectedTable == null) return;
-        orderItemsListView.getItems().clear();
-        List<MenuItem> items = restaurantService.getOrderItems(selectedTable.getId());
-        for (MenuItem item : items) {
-            orderItemsListView.getItems().add(item.getName() + " - " + item.calculatePrice() + " RON");
-        }
-        if (totalLabel != null) {
-            totalLabel.setText(String.format("Total: %.2f RON", restaurantService.calculateTableTotal(selectedTable.getId())));
-        }
-    }
-
-    private void loadMenu() {
-        menuListView.getItems().clear();
-        for (MenuItem item : MenuService.getInstance().findAll()) {
-            menuListView.getItems().add(item.getName() + " - " + item.calculatePrice() + " RON");
-        }
-    }
-
     private void loadTables() {
+        if (tablesPane == null) return;
         tablesPane.getChildren().clear();
+        if (terracePane != null) terracePane.getChildren().clear();
+
         for (Table table : TableService.getInstance().findAll()) {
-            VBox tableBox = new VBox(5);
-            tableBox.setAlignment(javafx.geometry.Pos.CENTER);
+            VBox tableBox = createTableNode(table);
 
-            Rectangle rect = new Rectangle(70, 70);
-            rect.setArcWidth(10);
-            rect.setArcHeight(10);
-
-            if (selectedTable != null && selectedTable.getId() == table.getId()) {
-                rect.setStrokeWidth(3);
-                rect.setStroke(Color.GOLD);
+            // Distribute tables to different panes based on ID
+            // r1-r10 (let's say IDs 1-10) -> tablesPane
+            // t1-t5 (let's say IDs 11-15) -> terracePane
+            if (table.getId() >= 11 && terracePane != null) {
+                terracePane.getChildren().add(tableBox);
             } else {
-                rect.setStrokeWidth(1);
-                rect.setStroke(Color.DARKSLATEGRAY);
+                tablesPane.getChildren().add(tableBox);
             }
-
-            rect.setFill(table.isOccupied() ? Color.TOMATO : Color.MEDIUMSEAGREEN);
-
-            Label label = new Label("Masa " + table.getId());
-            label.setTextFill(Color.WHITE);
-            label.setStyle("-fx-font-weight: bold;");
-
-            tableBox.getChildren().addAll(rect, label);
-            tableBox.setOnMouseClicked(event -> {
-                selectedTable = table;
-                if (selectedTableLabel != null) {
-                    selectedTableLabel.setText("Managing Table " + table.getId());
-                }
-                loadTables();
-                refreshOrderItems();
-            });
-
-            tablesPane.getChildren().add(tableBox);
         }
     }
 
-    @FXML
-    private void handleFinishOrder() {
-        if (selectedTable == null || !selectedTable.isOccupied()) {
-            showError("Error", "No active order to finish.");
-            return;
-        }
+    private VBox createTableNode(Table table) {
+        VBox tableBox = new VBox(8);
+        tableBox.setAlignment(javafx.geometry.Pos.CENTER);
+        tableBox.getStyleClass().add("table-node");
 
-        double total = restaurantService.calculateTableTotal(selectedTable.getId());
-        String method = (cashRadio != null && cashRadio.isSelected()) ? "Cash" : "Card";
+        StackPane stack = new StackPane();
+        Rectangle rect = new Rectangle(100, 100);
+        rect.setArcWidth(20);
+        rect.setArcHeight(20);
 
-        BillService.getInstance().create(0, total);
+        rect.setStrokeWidth(1);
+        rect.setStroke(Color.web("#dee2e6"));
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Payment Successful");
-        alert.setHeaderText("Receipt for Table " + selectedTable.getId());
-        alert.setContentText(String.format("Total Amount: %.2f RON\nPayment Method: %s\n\nThank you!", total, method));
-        alert.showAndWait();
+        rect.setFill(table.isOccupied() ? Color.web("#dc3545") : Color.web("#28a745"));
 
-        selectedTable.setOccupied(false);
-        TableService.getInstance().update(selectedTable.getId(), false);
-        restaurantService.clearTableOrder(selectedTable.getId());
+        // Label handling R for Restaurant and T for Terrace based on ID
+        String prefix = (table.getId() >= 11) ? "T" : "R";
+        int displayId = (table.getId() >= 11) ? table.getId() - 10 : table.getId();
+        Label label = new Label(prefix + displayId);
 
-        log("Table " + selectedTable.getId() + " paid via " + method + " and is now FREE.");
+        label.setTextFill(Color.WHITE);
+        label.setStyle("-fx-font-size: 20px; -fx-font-weight: 900;");
 
-        refreshOrderItems();
-        loadTables();
+        stack.getChildren().addAll(rect, label);
+
+        tableBox.getChildren().add(stack);
+        tableBox.setOnMouseClicked(event -> {
+            try {
+                OrderController.setTable(table);
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("order_view.fxml"));
+                Parent root = loader.load();
+                Stage stage = (Stage) tablesPane.getScene().getWindow();
+                Scene scene = new Scene(root, 1280, 850);
+
+                root.setOpacity(0);
+                stage.setScene(scene);
+                stage.setFullScreen(false);
+
+                FadeTransition ft = new FadeTransition(Duration.millis(400), root);
+                ft.setFromValue(0.0);
+                ft.setToValue(1.0);
+                ft.play();
+            } catch (Exception e) {
+                log("Error loading order view: " + e.getMessage());
+            }
+        });
+        return tableBox;
     }
 
     @FXML
     private void handleSaveEmployee() {
         String name = employeeNameField.getText();
         String role = employeeRoleCombo.getValue();
+        String pin = employeePinField != null ? employeePinField.getText() : null;
 
-        if (name == null || name.isEmpty() || role == null) {
-            showError("Invalid Data", "Please fill in both name and role.");
+        if (name == null || name.isEmpty() || role == null || pin == null || pin.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Invalid Data");
+            alert.setContentText("Please fill in name, role, and PIN.");
+            alert.showAndWait();
             return;
         }
 
-        EmployeeService.getInstance().create(name, role);
+        EmployeeService.getInstance().create(name, role, pin);
+        AuditService.getInstance().logAction("Registered Staff: " + name + " (" + role + ")");
         log("Added new employee: " + name + " (" + role + ")");
         employeeNameField.clear();
         employeeRoleCombo.setValue(null);
-    }
-
-    @FXML
-    private void handleRefreshData() {
-        loadMenu();
-        loadTables();
-        log("Data manually refreshed from database.");
-    }
-
-    @FXML
-    private void handleExit() {
-        Platform.exit();
-    }
-
-    @FXML
-    private void handleAbout() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("About");
-        alert.setHeaderText("Restaurant Manager v2.0");
-        alert.setContentText("Project 2026 - POO II Integration with DB and JavaFX.");
-        alert.showAndWait();
-    }
-
-    @FXML
-    private void handleClearOrder() {
-        if (selectedTable != null) {
-            restaurantService.clearTableOrder(selectedTable.getId());
-            refreshOrderItems();
-            log("Cleared items for Table " + selectedTable.getId());
-        }
+        if (employeePinField != null) employeePinField.clear();
     }
 
     @FXML
     private void handleLogout() {
         try {
+            AuditService.getInstance().logAction("User Logout");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("login_view.fxml"));
             Parent root = loader.load();
 
             Stage stage = (Stage) mainTabPane.getScene().getWindow();
             stage.setTitle("RestoManager - Login");
             stage.setScene(new Scene(root, 400, 500));
+            stage.setFullScreen(false); // Do not keep fullscreen after logout
+            stage.centerOnScreen();
         } catch (Exception e) {
-            e.printStackTrace();
+            log("Error logging out: " + e.getMessage());
         }
+    }
+
+    @FXML
+    private void handleRefreshData() {
+        loadTables();
+        AuditService.getInstance().logAction("Manual Data Refresh");
+        log("Data manually refreshed.");
+    }
+
+    @FXML
+    private void handleExit() {
+        AuditService.getInstance().logAction("System Exit");
+        Platform.exit();
+    }
+
+    @FXML
+    private void handleAbout() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Despre");
+        alert.setHeaderText("RestoManager Pro v2.0");
+        alert.setContentText("Dezvoltat de: Radulescu Emanuel-Andrei\nDisciplina: POO II - 2026");
+        alert.showAndWait();
     }
 
     private void log(String message) {
         if (logArea != null) {
             logArea.appendText("[" + java.time.LocalTime.now().withNano(0) + "] " + message + "\n");
         }
-    }
-
-    private void showError(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }
