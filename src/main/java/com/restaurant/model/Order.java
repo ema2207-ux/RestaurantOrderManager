@@ -32,4 +32,8 @@ public class Order {
     public int getEmployeeId() { return employeeId; }
     public String getStatus() { return status; }
     public List<MenuItem> getItems() { return items; }
+
+    public void setId(int id) { this.id = id; }
+    public void setEmployeeId(int employeeId) { this.employeeId = employeeId; }
+    public void setStatus(String status) { this.status = status; }
 }

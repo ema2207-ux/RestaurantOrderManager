@@ -10,11 +10,11 @@ public class RestaurantGui extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("main_view.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("login_view.fxml"));
         Parent root = loader.load();
 
-        primaryStage.setTitle("Restaurant Management System");
-        primaryStage.setScene(new Scene(root, 800, 600));
+        primaryStage.setTitle("RestoManager - Login");
+        primaryStage.setScene(new Scene(root, 400, 500));
         primaryStage.show();
     }
 

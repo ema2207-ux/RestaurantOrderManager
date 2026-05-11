@@ -27,6 +27,8 @@
                 <Label text="RESTO MANAGER" style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: white;"/>
                 <Separator orientation="VERTICAL" style="-fx-opacity: 0.3;"/>
                 <Label text="Operations Dashboard" style="-fx-text-fill: #bdc3c7; -fx-font-size: 14px;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="LOGOUT" onAction="#handleLogout" style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold;"/>
             </HBox>
         </VBox>
     </top>
@@ -41,43 +43,56 @@
 
     <center>
         <VBox spacing="20" style="-fx-padding: 20;">
-            <HBox spacing="20" VBox.vgrow="ALWAYS">
-                <!-- Tables Section -->
-                <VBox spacing="10" prefWidth="320">
-                    <Label text="FLOOR PLAN" style="-fx-font-weight: bold; -fx-text-fill: #34495e;"/>
-                    <ScrollPane fitToWidth="true" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #dcdde1; -fx-border-radius: 10;">
-                        <FlowPane fx:id="tablesFlowPane" hgap="15" vgap="15" style="-fx-padding: 15;"/>
-                    </ScrollPane>
-                    <HBox spacing="15" style="-fx-padding: 5;">
-                        <HBox spacing="5" alignment="CENTER_LEFT"><Rectangle width="12" height="12" fill="mediumseagreen" arcWidth="3" arcHeight="3"/><Label text="Free" style="-fx-font-size: 11px;"/></HBox>
-                        <HBox spacing="5" alignment="CENTER_LEFT"><Rectangle width="12" height="12" fill="tomato" arcWidth="3" arcHeight="3"/><Label text="Occupied" style="-fx-font-size: 11px;"/></HBox>
-                    </HBox>
-                </VBox>
+            <TabPane fx:id="mainTabPane" VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
+                <tabs>
+                    <Tab text="SALA (Mese)">
+                        <HBox spacing="20">
+                            <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
+                            <!-- Tables Section -->
+                            <VBox spacing="10" prefWidth="320">
+                                <Label text="FLOOR PLAN" style="-fx-font-weight: bold; -fx-text-fill: #34495e;"/>
+                                <ScrollPane fitToWidth="true" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #dcdde1; -fx-border-radius: 10;">
+                                    <FlowPane fx:id="tablesPane" hgap="15" vgap="15" style="-fx-padding: 15;"/>
+                                </ScrollPane>
+                                <HBox spacing="15" style="-fx-padding: 5;">
+                                    <HBox spacing="5" alignment="CENTER_LEFT"><Rectangle width="12" height="12" fill="mediumseagreen" arcWidth="3" arcHeight="3"/><Label text="Free" style="-fx-font-size: 11px;"/></HBox>
+                                    <HBox spacing="5" alignment="CENTER_LEFT"><Rectangle width="12" height="12" fill="tomato" arcWidth="3" arcHeight="3"/><Label text="Occupied" style="-fx-font-size: 11px;"/></HBox>
+                                </HBox>
+                            </VBox>
 
-                <!-- Order Panel -->
-                <VBox fx:id="selectedTablePane" spacing="15" HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
-                    <HBox alignment="CENTER_LEFT">
-                        <Label fx:id="selectedTableLabel" text="No Table Selected" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2980b9;"/>
-                        <Region HBox.hgrow="ALWAYS"/>
-                        <Button text="RESET" onAction="#handleClearOrder" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 5 10;"/>
-                    </HBox>
+                            <!-- Order Panel -->
+                            <VBox fx:id="selectedTablePane" spacing="15" HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                                <HBox alignment="CENTER_LEFT">
+                                    <Label fx:id="selectedTableLabel" text="No Table Selected" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2980b9;"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Button text="RESET" onAction="#handleClearOrder" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 5 10;"/>
+                                </HBox>
 
-                    <ListView fx:id="orderItemsListView" VBox.vgrow="ALWAYS" />
+                                <ListView fx:id="orderItemsListView" VBox.vgrow="ALWAYS" />
 
-                    <VBox spacing="15" style="-fx-background-color: #f8f9fa; -fx-padding: 15; -fx-background-radius: 8;">
-                        <HBox alignment="CENTER_RIGHT" spacing="15">
-                            <Label text="TOTAL DUE:" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
-                            <Label fx:id="totalLabel" text="0.00 RON" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+                                <VBox spacing="15" style="-fx-background-color: #f8f9fa; -fx-padding: 15; -fx-background-radius: 8;">
+                                    <HBox alignment="CENTER_RIGHT" spacing="15">
+                                        <Label text="TOTAL DUE:" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+                                        <Label fx:id="totalLabel" text="0.00 RON" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+                                    </HBox>
+                                    <HBox alignment="CENTER_RIGHT" spacing="10">
+                                        <RadioButton fx:id="cashRadio" text="CASH" selected="true"><toggleGroup><ToggleGroup fx:id="paymentGroup"/></toggleGroup></RadioButton>
+                                        <RadioButton fx:id="cardRadio" text="CARD" toggleGroup="$paymentGroup"/>
+                                        <Region prefWidth="10"/>
+                                        <Button text="PROCESS PAYMENT" onAction="#handleFinishOrder" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
+                                    </HBox>
+                                </VBox>
+                            </VBox>
                         </HBox>
-                        <HBox alignment="CENTER_RIGHT" spacing="10">
-                            <RadioButton fx:id="cashRadio" text="CASH" selected="true"><toggleGroup><ToggleGroup fx:id="paymentGroup"/></toggleGroup></RadioButton>
-                            <RadioButton fx:id="cardRadio" text="CARD" toggleGroup="$paymentGroup"/>
-                            <Region prefWidth="10"/>
-                            <Button text="PROCESS PAYMENT" onAction="#handleFinishOrder" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
-                        </HBox>
-                    </VBox>
-                </VBox>
-            </HBox>
+                    </Tab>
+                    <Tab fx:id="kitchenTab" text="BUCĂTĂRIE">
+                        <VBox spacing="15" style="-fx-padding: 20;">
+                            <Label text="COMENZI ACTIVE BUCĂTĂRIE" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #34495e;"/>
+                            <ListView fx:id="kitchenOrdersList" VBox.vgrow="ALWAYS" />
+                        </VBox>
+                    </Tab>
+                </tabs>
+            </TabPane>
 
             <!-- Bottom Tools -->
             <HBox spacing="20" prefHeight="200">

@@ -11,7 +11,7 @@ public class RestaurantService {
     private Map<Integer, Employee> employees = new HashMap<>();
     private List<Order> history = new ArrayList<>();
     private RestaurantRepository repository = new RestaurantRepository();
-    private Map<Integer, List<MenuItem>> activeOrders = new HashMap<>();
+    private static Map<Integer, List<MenuItem>> persistentOrders = new HashMap<>(); // Statica pentru a pastra datele intre sesiuni de login
 
     public RestaurantService() {
         loadData();
@@ -47,21 +47,21 @@ public class RestaurantService {
     }
 
     public void addItemToTable(int tableId, MenuItem item) {
-        activeOrders.computeIfAbsent(tableId, k -> new ArrayList<>()).add(item);
+        persistentOrders.computeIfAbsent(tableId, k -> new ArrayList<>()).add(item);
     }
 
     public List<MenuItem> getOrderItems(int tableId) {
-        return activeOrders.getOrDefault(tableId, new ArrayList<>());
+        return persistentOrders.getOrDefault(tableId, new ArrayList<>());
     }
 
     public double calculateTableTotal(int tableId) {
         return getOrderItems(tableId).stream()
-                .mapToDouble(MenuItem::calculatePrice)
+                .mapToDouble(Sellable::calculatePrice)
                 .sum();
     }
 
     public void clearTableOrder(int tableId) {
-        activeOrders.remove(tableId);
+        persistentOrders.remove(tableId);
     }
 
     public Set<MenuItem> getMenu() { return menu; }

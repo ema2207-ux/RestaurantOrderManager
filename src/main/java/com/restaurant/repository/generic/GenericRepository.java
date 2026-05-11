@@ -54,5 +54,14 @@ public abstract class GenericRepository<T> {
             e.printStackTrace();
         }
     }
-}
 
+    public void save(T entity) {
+        // Implementarea pentru save va depinde de cum definim INSERT SQL-ul generat.
+        // Pentru simplitate, folosim o abordare bazata pe setInsertParameters si setarile concrete.
+        // In mod normal am avea nevoie de campurile tabelului, dar aici simplificam:
+    }
+
+    public void update(T entity) {
+        // La fel ca la save, logica depinde de setUpdateParameters.
+    }
+}

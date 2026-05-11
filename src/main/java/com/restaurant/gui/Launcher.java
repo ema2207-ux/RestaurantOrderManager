@@ -5,4 +5,3 @@ public class Launcher {
         RestaurantGui.main(args);
     }
 }
-

@@ -1,12 +1,12 @@
 package com.restaurant.service;
 
 import com.restaurant.model.OrderItem;
-import com.restaurant.repository.generic.GenericRepository;
-import com.restaurant.config.DatabaseConfig;
-import java.sql.*;
+import com.restaurant.repository.OrderItemRepository;
+import java.util.List;
 
-public class OrderItemService extends GenericRepository<OrderItem> {
+public class OrderItemService {
     private static OrderItemService instance;
+    private final OrderItemRepository orderItemRepository = OrderItemRepository.getInstance();
 
     private OrderItemService() {}
 
@@ -15,29 +15,13 @@ public class OrderItemService extends GenericRepository<OrderItem> {
         return instance;
     }
 
-    @Override
-    protected String getTableName() { return "order_items"; }
-
-    @Override
-    protected OrderItem mapResultSetToEntity(ResultSet rs) throws SQLException {
-        return new OrderItem(rs.getInt("order_id"), rs.getInt("menu_item_id"));
+    public void create(int orderId, int menuItemId) {
+        OrderItem oi = new OrderItem(orderId, menuItemId);
+        orderItemRepository.save(oi);
     }
 
-    @Override
-    protected void setInsertParameters(PreparedStatement pstmt, OrderItem oi) throws SQLException {}
-    @Override
-    protected void setUpdateParameters(PreparedStatement pstmt, OrderItem oi) throws SQLException {}
-
-    public void create(int orderId, int menuItemId) {
-        String sql = "INSERT INTO order_items (order_id, menu_item_id) VALUES (?, ?)";
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, orderId);
-            pstmt.setInt(2, menuItemId);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public List<OrderItem> findAll() {
+        return orderItemRepository.findAll();
     }
 }
 

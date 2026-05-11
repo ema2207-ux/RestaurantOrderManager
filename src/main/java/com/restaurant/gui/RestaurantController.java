@@ -1,5 +1,6 @@
 package com.restaurant.gui;
 
+import com.restaurant.model.Employee;
 import com.restaurant.model.MenuItem;
 import com.restaurant.model.Table;
 import com.restaurant.service.EmployeeService;
@@ -9,18 +10,26 @@ import com.restaurant.service.TableService;
 import com.restaurant.service.BillService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import java.util.List;
 
 public class RestaurantController {
 
     @FXML private ListView<String> menuListView;
-    @FXML private FlowPane tablesFlowPane;
+    @FXML private FlowPane tablesPane;
+    @FXML private Tab kitchenTab;
+    @FXML private TabPane mainTabPane;
+    @FXML private ListView<String> kitchenOrdersList;
+
     @FXML private TextField employeeNameField;
     @FXML private ComboBox<String> employeeRoleCombo;
     @FXML private TextArea logArea;
@@ -40,6 +49,12 @@ public class RestaurantController {
         if (employeeRoleCombo != null) {
             employeeRoleCombo.getItems().addAll("Chelner", "Bucatar", "Manager", "Barman");
         }
+        Employee user = LoginController.getCurrentUser();
+        // Kitchen tab only for Managers or special roles
+        if (!"Manager".equals(user.getRole())) {
+            mainTabPane.getTabs().remove(kitchenTab);
+        }
+
         loadMenu();
         loadTables();
 
@@ -93,9 +108,11 @@ public class RestaurantController {
     }
 
     private void loadTables() {
-        tablesFlowPane.getChildren().clear();
+        tablesPane.getChildren().clear();
         for (Table table : TableService.getInstance().findAll()) {
-            StackPane tableBox = new StackPane();
+            VBox tableBox = new VBox(5);
+            tableBox.setAlignment(javafx.geometry.Pos.CENTER);
+
             Rectangle rect = new Rectangle(70, 70);
             rect.setArcWidth(10);
             rect.setArcHeight(10);
@@ -124,7 +141,7 @@ public class RestaurantController {
                 refreshOrderItems();
             });
 
-            tablesFlowPane.getChildren().add(tableBox);
+            tablesPane.getChildren().add(tableBox);
         }
     }
 
@@ -199,6 +216,20 @@ public class RestaurantController {
             restaurantService.clearTableOrder(selectedTable.getId());
             refreshOrderItems();
             log("Cleared items for Table " + selectedTable.getId());
+        }
+    }
+
+    @FXML
+    private void handleLogout() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("login_view.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) mainTabPane.getScene().getWindow();
+            stage.setTitle("RestoManager - Login");
+            stage.setScene(new Scene(root, 400, 500));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

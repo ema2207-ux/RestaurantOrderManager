@@ -1,12 +1,12 @@
 package com.restaurant.service;
 
 import com.restaurant.model.Order;
-import com.restaurant.repository.generic.GenericRepository;
-import com.restaurant.config.DatabaseConfig;
-import java.sql.*;
+import com.restaurant.repository.OrderRepository;
+import java.util.List;
 
-public class OrderService extends GenericRepository<Order> {
+public class OrderService {
     private static OrderService instance;
+    private final OrderRepository orderRepository = OrderRepository.getInstance();
 
     private OrderService() {}
 
@@ -15,41 +15,22 @@ public class OrderService extends GenericRepository<Order> {
         return instance;
     }
 
-    @Override
-    protected String getTableName() { return "orders"; }
-
-    @Override
-    protected Order mapResultSetToEntity(ResultSet rs) throws SQLException {
-        return new Order(rs.getInt("id"), rs.getInt("table_id"), rs.getInt("employee_id"), rs.getString("status"));
+    public void create(int tableId, int employeeId, String status) {
+        Order o = new Order(tableId);
+        o.setEmployeeId(employeeId);
+        o.setStatus(status);
+        orderRepository.save(o);
     }
 
-    @Override
-    protected void setInsertParameters(PreparedStatement pstmt, Order o) throws SQLException {}
-    @Override
-    protected void setUpdateParameters(PreparedStatement pstmt, Order o) throws SQLException {}
-
-    public void create(int tableId, int employeeId, String status) {
-        String sql = "INSERT INTO orders (table_id, employee_id, status) VALUES (?, ?, ?)";
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, tableId);
-            pstmt.setInt(2, employeeId);
-            pstmt.setString(3, status);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public List<Order> findAll() {
+        return orderRepository.findAll();
     }
 
     public void updateStatus(int id, String status) {
-        String sql = "UPDATE orders SET status = ? WHERE id = ?";
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, status);
-            pstmt.setInt(2, id);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        Order o = orderRepository.findById(id);
+        if (o != null) {
+            o.setStatus(status);
+            orderRepository.update(o);
         }
     }
 }

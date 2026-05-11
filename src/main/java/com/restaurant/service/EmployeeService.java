@@ -1,13 +1,12 @@
 package com.restaurant.service;
 
 import com.restaurant.model.Employee;
-import com.restaurant.repository.generic.GenericRepository;
-import com.restaurant.config.DatabaseConfig;
-import java.sql.*;
+import com.restaurant.repository.EmployeeRepository;
 import java.util.List;
 
-public class EmployeeService extends GenericRepository<Employee> {
+public class EmployeeService {
     private static EmployeeService instance;
+    private final EmployeeRepository employeeRepository = EmployeeRepository.getInstance();
 
     private EmployeeService() {}
 
@@ -18,50 +17,28 @@ public class EmployeeService extends GenericRepository<Employee> {
         return instance;
     }
 
-    @Override
-    protected String getTableName() { return "employees"; }
-
-    @Override
-    protected Employee mapResultSetToEntity(ResultSet rs) throws SQLException {
-        return new Employee(rs.getInt("id"), rs.getString("name"), rs.getString("role"));
-    }
-
-    @Override
-    protected void setInsertParameters(PreparedStatement pstmt, Employee e) throws SQLException {
-        pstmt.setString(1, e.getName());
-        pstmt.setString(2, e.getRole());
-    }
-
-    @Override
-    protected void setUpdateParameters(PreparedStatement pstmt, Employee e) throws SQLException {
-        pstmt.setString(1, e.getName());
-        pstmt.setString(2, e.getRole());
-        pstmt.setInt(3, e.getId());
-    }
-
     public void create(String name, String role) {
-        String sql = "INSERT INTO employees (name, role) VALUES (?, ?)";
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, name);
-            pstmt.setString(2, role);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        Employee e = new Employee(0, name, role);
+        employeeRepository.save(e);
     }
 
     public void update(int id, String name, String role) {
-        String sql = "UPDATE employees SET name = ?, role = ? WHERE id = ?";
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, name);
-            pstmt.setString(2, role);
-            pstmt.setInt(3, id);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        Employee e = new Employee(id, name, role);
+        employeeRepository.update(e);
+    }
+
+    public List<Employee> findAll() {
+        return employeeRepository.findAll();
+    }
+
+    public Employee login(String pin) {
+        return findAll().stream()
+                .filter(e -> pin.equals(e.getPin()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void delete(int id) {
+        employeeRepository.delete(id);
     }
 }
-
