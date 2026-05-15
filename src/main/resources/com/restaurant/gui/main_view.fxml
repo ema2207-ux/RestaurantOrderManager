@@ -58,11 +58,48 @@
                             <FlowPane fx:id="terracePane" hgap="25" vgap="25" style="-fx-padding: 20;"/>
                         </ScrollPane>
                     </Tab>
+                    <Tab fx:id="barTab" text="BAR">
+                        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+                            <VBox spacing="20" style="-fx-padding: 20;">
+                                <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: #ffffff; -fx-padding: 20; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 10, 0, 0, 3);">
+                                    <Label text="COMENZI ACTIVE BAR" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Button text="REFRESH" onAction="#handleRefreshData" styleClass="button-primary" style="-fx-font-size: 12px; -fx-padding: 10 20;"/>
+                                </HBox>
+                                <VBox fx:id="barBox" spacing="15" style="-fx-padding: 10;"/>
+                            </VBox>
+                        </ScrollPane>
+                    </Tab>
                     <Tab fx:id="kitchenTab" text="BUCĂTĂRIE (ADMIN)">
-                        <VBox spacing="20" styleClass="card" style="-fx-margin: 20 0 0 0;">
-                            <Label text="COMENZI PRIMITE ÎN BUCĂTĂRIE" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-                            <ListView fx:id="kitchenOrdersList" VBox.vgrow="ALWAYS" />
-                        </VBox>
+                        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+                            <VBox spacing="20" style="-fx-padding: 20;">
+                                <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: #ffffff; -fx-padding: 20; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 10, 0, 0, 3);">
+                                    <Label text="COMENZI IN PREGATIRE" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Button text="REFRESH COMENZI" onAction="#handleRefreshData" styleClass="button-primary" style="-fx-font-size: 12px; -fx-padding: 10 20;"/>
+                                </HBox>
+                                <VBox fx:id="kitchenBox" spacing="15" style="-fx-padding: 10;">
+                                    <!-- Aici vor apărea chenarele cu comenzi active -->
+                                </VBox>
+                                <Separator style="-fx-padding: 10 0;"/>
+                                <Label text="LOG ACTIVITATE" style="-fx-font-weight: bold; -fx-text-fill: #666; -fx-font-size: 13px;"/>
+                                <ListView fx:id="kitchenOrdersList" VBox.vgrow="NEVER" prefHeight="100" style="-fx-background-radius: 10; -fx-border-radius: 10;"/>
+                            </VBox>
+                        </ScrollPane>
+                    </Tab>
+                    <Tab fx:id="reportsTab" text="INCASARI (MANAGER)">
+                        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+                            <VBox spacing="25" style="-fx-padding: 30;">
+                                <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: #ffffff; -fx-padding: 25; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 10, 0, 0, 3);">
+                                    <Label text="RAPORT VÂNZĂRI PE STAFF" style="-fx-font-size: 20px; -fx-font-weight: 900; -fx-text-fill: #1e293b;"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Button text="REÎNCARCĂ" onAction="#handleRefreshData" styleClass="button-primary" style="-fx-font-size: 12px;"/>
+                                </HBox>
+                                <VBox fx:id="reportsBox" spacing="15" style="-fx-background-color: transparent;">
+                                    <!-- Cardurile cu încasări vor fi injectate aici -->
+                                </VBox>
+                            </VBox>
+                        </ScrollPane>
                     </Tab>
                 </tabs>
             </TabPane>

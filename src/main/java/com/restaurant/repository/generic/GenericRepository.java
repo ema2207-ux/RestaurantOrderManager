@@ -19,10 +19,14 @@ public abstract class GenericRepository<T> {
         try (Connection conn = DatabaseConfig.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
+            System.out.println("[DEBUG] Executing SQL: " + sql);
             while (rs.next()) {
+                System.out.println("[DEBUG] Found row in " + getTableName());
                 results.add(mapResultSetToEntity(rs));
             }
+            System.out.println("[DEBUG] Total rows retrieved from " + getTableName() + ": " + results.size());
         } catch (SQLException e) {
+            System.err.println("[REPO ERROR] Failed to find all in " + getTableName() + ": " + e.getMessage());
             e.printStackTrace();
         }
         return results;
@@ -67,7 +71,7 @@ public abstract class GenericRepository<T> {
         } else if ("orders".equals(getTableName())) {
             sql += " (table_id, employee_id, status) VALUES (?, ?, ?)";
         } else if ("bills".equals(getTableName())) {
-            sql += " (order_id, total_amount) VALUES (?, ?)";
+            sql += " (order_id, total_amount, payment_method, employee_name) VALUES (?, ?, ?, ?)";
         } else {
             return; // Not implemented for other tables yet
         }
@@ -77,7 +81,27 @@ public abstract class GenericRepository<T> {
             setInsertParameters(pstmt, entity);
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            // If it's a bills insert and we get "column does not exist", try without the new columns
+            if ("bills".equals(getTableName()) && e.getMessage().contains("does not exist")) {
+                System.err.println("[REPO FALLBACK] Tentativa insert fără coloane noi...");
+                String fallbackSql = "INSERT INTO bills (order_id, total_amount) VALUES (?, ?)";
+                try (Connection conn = DatabaseConfig.getConnection();
+                     PreparedStatement pstmt = conn.prepareStatement(fallbackSql)) {
+                    if (entity instanceof com.restaurant.model.Bill) {
+                        com.restaurant.model.Bill bill = (com.restaurant.model.Bill) entity;
+                        pstmt.setInt(1, bill.getOrderId());
+                        pstmt.setDouble(2, bill.getAmount());
+                        pstmt.executeUpdate();
+                        System.out.println("[REPO FALLBACK] Insert reușit (fără payment_method și employee_name)");
+                    }
+                } catch (SQLException fallbackEx) {
+                    System.err.println("[REPO FALLBACK ERROR] " + fallbackEx.getMessage());
+                    fallbackEx.printStackTrace();
+                }
+            } else {
+                System.err.println("[REPO ERROR] Failed to save entity: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 

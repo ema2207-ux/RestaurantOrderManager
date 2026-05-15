@@ -11,7 +11,8 @@ public class RestaurantService {
     private Map<Integer, Employee> employees = new HashMap<>();
     private List<Order> history = new ArrayList<>();
     private RestaurantRepository repository = new RestaurantRepository();
-    private static Map<Integer, List<MenuItem>> persistentOrders = new HashMap<>(); // Statica pentru a pastra datele intre sesiuni de login
+    private static Map<Integer, List<MenuItem>> persistentOrders = new HashMap<>();
+    private static List<KitchenOrder> activeKitchenOrders = new ArrayList<>();
 
     public RestaurantService() {
         loadData();
@@ -50,6 +51,35 @@ public class RestaurantService {
         persistentOrders.computeIfAbsent(tableId, k -> new ArrayList<>()).add(item);
     }
 
+    public void sendToKitchen(int tableId, List<MenuItem> items) {
+        List<MenuItem> foodItems = new ArrayList<>();
+        List<MenuItem> drinkItems = new ArrayList<>();
+
+        for (MenuItem item : items) {
+            // Presupunem că FoodItem și DrinkItem sunt clase distincte sau verificăm altfel tipul
+            if (item.getClass().getSimpleName().contains("Drink") || item.getName().toLowerCase().contains("apa") || item.getName().toLowerCase().contains("cola") || item.getName().toLowerCase().contains("bere") || item.getName().toLowerCase().contains("vin") || item.getName().toLowerCase().contains("cafea") || item.getName().toLowerCase().contains("fanta") || item.getName().toLowerCase().contains("ceai")) {
+                drinkItems.add(item);
+            } else {
+                foodItems.add(item);
+            }
+        }
+
+        if (!foodItems.isEmpty()) {
+            activeKitchenOrders.add(new KitchenOrder(tableId, foodItems, "BUCATARIE"));
+        }
+        if (!drinkItems.isEmpty()) {
+            activeKitchenOrders.add(new KitchenOrder(tableId, drinkItems, "BAR"));
+        }
+    }
+
+    public List<KitchenOrder> getActiveKitchenOrders() {
+        return activeKitchenOrders;
+    }
+
+    public void completeKitchenOrder(KitchenOrder order) {
+        order.setCompleted(true);
+    }
+
     public List<MenuItem> getOrderItems(int tableId) {
         return persistentOrders.getOrDefault(tableId, new ArrayList<>());
     }
@@ -62,6 +92,27 @@ public class RestaurantService {
 
     public void clearTableOrder(int tableId) {
         persistentOrders.remove(tableId);
+    }
+
+    public int createOrderInDatabase(int tableId, String waiterName) {
+        try {
+            Employee emp = EmployeeService.getInstance().findByName(waiterName);
+            int employeeId = (emp != null) ? emp.getId() : 1; // Default to ID 1 if waiter not found
+            
+            OrderService.getInstance().create(tableId, employeeId, "CLOSED");
+            
+            // Retrieve the created order ID from the database
+            List<Order> allOrders = OrderService.getInstance().findAll();
+            // Get the last order (most recently created)
+            if (!allOrders.isEmpty()) {
+                Order lastOrder = allOrders.get(allOrders.size() - 1);
+                return lastOrder.getId();
+            }
+        } catch (Exception e) {
+            System.err.println("[ERROR] createOrderInDatabase failed: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return 1; // Fallback default
     }
 
     public Set<MenuItem> getMenu() { return menu; }

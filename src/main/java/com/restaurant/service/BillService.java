@@ -14,9 +14,12 @@ public class BillService {
         return instance;
     }
 
-    public void create(int orderId, double amount) {
-        Bill bill = new Bill(0, orderId, amount, null);
+    public void create(int orderId, double amount, String paymentMethod, String employeeName) {
+        Bill bill = new Bill(0, orderId, amount, paymentMethod, employeeName);
         billRepository.save(bill);
     }
-}
 
+    public java.util.List<Bill> findAll() {
+        return billRepository.findAll();
+    }
+}

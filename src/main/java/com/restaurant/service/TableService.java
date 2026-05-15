@@ -26,7 +26,9 @@ public class TableService {
     }
 
     public List<Table> findAll() {
-        return tableRepository.findAll();
+        List<Table> tables = tableRepository.findAll();
+        tables.sort((t1, t2) -> Integer.compare(t1.getId(), t2.getId()));
+        return tables;
     }
 
     public void resetAllTables() {

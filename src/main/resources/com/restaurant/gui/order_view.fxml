@@ -33,10 +33,10 @@
                     </RadioButton>
                     <RadioButton text="Card" toggleGroup="$pg" style="-fx-font-weight: bold;"/>
                     <Button text="ȘTERGE TOT" onAction="#handleClearOrder" style="-fx-background-color: #ffeded; -fx-text-fill: #dc3545;"/>
+                    <Button text="SALVEAZĂ COMANDA" onAction="#handleBack" styleClass="button-primary" prefHeight="50" prefWidth="180"/>
                     <Button text="FINALIZEAZĂ PLATA" onAction="#handleFinishOrder" styleClass="button-success" prefHeight="50" prefWidth="250"/>
                 </HBox>
             </VBox>
         </VBox>
     </center>
 </BorderPane>
-

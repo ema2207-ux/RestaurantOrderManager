@@ -38,6 +38,13 @@ public class EmployeeService {
                 .orElse(null);
     }
 
+    public Employee findByName(String name) {
+        return findAll().stream()
+                .filter(e -> name.equals(e.getName()))
+                .findFirst()
+                .orElse(null);
+    }
+
     public void delete(int id) {
         employeeRepository.delete(id);
     }

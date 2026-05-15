@@ -23,13 +23,37 @@ public class BillRepository extends GenericRepository<Bill> {
 
     @Override
     protected Bill mapResultSetToEntity(ResultSet rs) throws SQLException {
-        return new Bill(rs.getInt("id"), rs.getInt("order_id"), rs.getDouble("total_amount"), rs.getTimestamp("issue_date").toLocalDateTime());
+        String paymentMethod = null;
+        String employeeName = null;
+
+        // Try to read the optional columns; if they don't exist, use defaults
+        try {
+            paymentMethod = rs.getString("payment_method");
+        } catch (SQLException e) {
+            paymentMethod = "Numerar"; // Default value
+        }
+
+        try {
+            employeeName = rs.getString("employee_name");
+        } catch (SQLException e) {
+            employeeName = "Manager"; // Default value
+        }
+
+        return new Bill(
+            rs.getInt("id"), 
+            rs.getInt("order_id"), 
+            rs.getDouble("total_amount"), 
+            paymentMethod,
+            employeeName
+        );
     }
 
     @Override
     protected void setInsertParameters(PreparedStatement pstmt, Bill b) throws SQLException {
         pstmt.setInt(1, b.getOrderId());
-        pstmt.setDouble(2, b.getTotalAmount());
+        pstmt.setDouble(2, b.getAmount());
+        pstmt.setString(3, b.getPaymentMethod());
+        pstmt.setString(4, b.getEmployeeName());
     }
 
     @Override
